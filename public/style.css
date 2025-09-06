@@ -1,3 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
 .nav-item.dropdown:hover .dropdown-menu {
     display: block;
     margin-top: 0;
@@ -10,22 +16,16 @@
 
 
 .gradient-background {
-    background: linear-gradient(135deg, #FFDDC1     , #FFABAB     , #FF7676     );
-    background-size: 180% 180%;
-    animation: gradient-animation 4s ease infinite;
-  }
-  
+    background: linear-gradient(135deg, #fff1f1, #ffe4e4, #ffc5c5);
+    background-size: 200% 200%;
+    animation: gradient-animation 10s ease infinite;
+}
+
 @keyframes gradient-animation {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}  
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
 
 .hover-bg-danger:hover {
     background-color: #B71C1C !important; /* Bootstrap 'danger' red */
@@ -50,4 +50,12 @@
         padding: 15px;
         box-shadow: none;
     }
+}
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
