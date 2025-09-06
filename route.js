@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import session from "express-session"; 
+import MongoStore from 'connect-mongo'; 
 import ExcelJS from 'exceljs';
 import { 
     Donor,
@@ -52,9 +53,14 @@ app.use(session({
     secret: 'your-secret-key',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 3600000 } // 1 hour session
+    store: MongoStore.create({         // <-- Add this 'store' option
+        mongoUrl: process.env.MONGO_URI
+    }),
+    cookie: { 
+        secure: false, // Set to true if you are using HTTPS
+        maxAge: 3600000 // 1 hour session
+    } 
 }));
-
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
