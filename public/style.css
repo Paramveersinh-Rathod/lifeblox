@@ -59,3 +59,41 @@ body {
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
+.service-card {
+    background-color: #ffffff;
+    border: 1px solid #eee;
+    border-radius: 15px;
+    padding: 2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.service-card .icon {
+    font-size: 3rem;
+    color: #dc3545; /* Bootstrap danger red */
+}
+
+.section-heading {
+    text-align: center;
+    margin-bottom: 2.5rem; /* Adds space below the heading */
+}
+
+.section-heading h3 {
+    display: inline-block;
+    background-color: #dc3545;
+    color: #ffffff;
+    padding: 0.75rem 4rem; /* Changed 2.5rem to 4rem for more width */
+    border-radius: 50px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.carousel-caption {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 1rem;
+}
