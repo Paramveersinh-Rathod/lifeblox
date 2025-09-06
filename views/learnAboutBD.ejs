@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Donation Hub</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        /* Eligibility Form Styles */
+        .eligibility-section .card {
+            border: 3px solid #af0000;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .eligibility-section .btn-primary {
+            background-color: #af0000;
+            border-color: #af0000;
+        }
+
+        .eligibility-section .btn-primary:hover {
+            background-color: #c80000;
+            border-color: #c80000;
+        }
+
+        .eligibility-section .form-control:focus,
+        .eligibility-section .form-select:focus {
+            border-color: #af0000;
+            box-shadow: 0 0 0 0.25rem rgba(175, 0, 0, 0.25);
+        }
+
+        .eligibility-section .form-check-input:checked {
+            background-color: #af0000;
+            border-color: #af0000;
+        }
+
+        .eligibility-section .modal-content {
+            border: 3px solid #af0000;
+        }
+
+        .eligibility-section .btn-outline-primary {
+            color: #af0000;
+            border-color: #af0000;
+        }
+
+        .eligibility-section .btn-outline-primary:hover {
+            background-color: #af0000;
+            border-color: #af0000;
+            color: #fff;
+        }
+
+        /* Blood Type Cards Styles */
+        .blood-type-section .tab-button {
+            border: 1px solid rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            padding: 0.75rem 0.5rem;
+            background-color: #fff;
+        }
+
+        .blood-type-section .tab-button.selected {
+            background-color: #c0222b;
+            color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .blood-type-section .tab-button:hover:not(.selected) {
+            background-color: #ffccd1;
+            border-color: #c0222b;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .blood-type-section .cards-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .blood-type-section .donor-card {
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .blood-type-section .take-from {
+            background-color: #e5cbba;
+        }
+
+        .blood-type-section .give-to {
+            background-color: #ffe3ad;
+        }
+
+        .blood-type-section .donor-card .card-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .blood-type-section .donor-card .card-text {
+            font-size: 1.5rem;
+            word-spacing: 0.5rem;
+        }
+
+        .blood-type-section .patient-image {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .blood-type-section .patient-image img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 1rem;
+        }
+
+        .blood-type-section .blood-type-container {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 5px 0;
+            justify-content: center;
+        }
+
+        .blood-type-section .blood-type-button {
+            flex: 0 0 auto;
+            min-width: 80px;
+        }
+
+        /* Navigation Styles */
+        .nav-tabs .nav-link {
+            color: #af0000;
+            font-weight: bold;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: #af0000;
+            color: #fff;
+            border-color: #af0000;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .blood-type-section .tab-button {
+                font-size: 1rem;
+                padding: 0.5rem 0.25rem;
+            }
+            .blood-type-section .donor-card .card-text {
+                font-size: 1.25rem;
+            }
+            .blood-type-section .content-row {
+                flex-direction: column;
+            }
+            .blood-type-section .patient-image {
+                margin-top: 2rem;
+            }
+            .blood-type-section .blood-type-container {
+                flex-wrap: wrap;
+            }
+            .blood-type-section .blood-type-button {
+                flex: 0 0 calc(25% - 10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4" id="sectionTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="eligibility-tab" data-bs-toggle="tab" data-bs-target="#eligibility-section" type="button" role="tab" aria-controls="eligibility-section" aria-selected="true">Eligibility Form</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="blood-type-tab" data-bs-toggle="tab" data-bs-target="#blood-type-section" type="button" role="tab" aria-controls="blood-type-section" aria-selected="false">Blood Type Compatibility</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="sectionTabContent">
+            <!-- Home Link -->
+        <div class="d-flex justify-content-start mb-2">
+            <a href="/" class="text-danger fw-bold text-decoration-none"> &larr; Back to Home</a>
+        </div>
+            <!-- Eligibility Form Section -->
+            <div class="tab-pane fade show active eligibility-section" id="eligibility-section" role="tabpanel" aria-labelledby="eligibility-tab">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-6">
+                        <h2 class="text-center mb-4">Blood Donation Eligibility Form</h2>
+
+                        <!-- Question containers -->
+                        <div id="age-question-container" class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Age Information</h5>
+                                <div class="mb-3">
+                                    <label for="age-input" class="form-label">Enter your age:</label>
+                                    <input type="number" class="form-control" id="age-input">
+                                </div>
+                                <button class="btn btn-primary w-100" onclick="nextQuestion('age')">Next</button>
+                            </div>
+                        </div>
+
+                        <div id="weight-question-container" class="card" style="display: none;">
+                            <div class="card-body">
+                                <h5 class="card-title">Weight Information</h5>
+                                <div class="mb-3">
+                                    <label for="weight-input" class="form-label">Enter your weight (kg):</label>
+                                    <input type="number" class="form-control" id="weight-input">
+                                </div>
+                                <button class="btn btn-primary w-100" onclick="nextQuestion('weight')">Next</button>
+                            </div>
+                        </div>
+
+                        <div id="gender-question-container" class="card" style="display: none;">
+                            <div class="card-body">
+                                <h5 class="card-title">Gender Information</h5>
+                                <div class="mb-3">
+                                    <label class="form-label">Select your gender:</label>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="gender" id="male" value="Male">
+                                        <label class="form-check-label" for="male">Male</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="gender" id="female" value="Female">
+                                        <label class="form-check-label" for="female">Female</label>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary w-100" onclick="nextQuestion('gender')">Next</button>
+                            </div>
+                        </div>
+
+                        <div id="infection-question-container" class="card" style="display: none;">
+                            <div class="card-body">
+                                <h5 class="card-title">Infection Status</h5>
+                                <div class="mb-3">
+                                    <label for="infection-select" class="form-label">Select your infection status:</label>
+                                    <select class="form-select" id="infection-select">
+                                        <option value="">Select infection</option>
+                                        <option value="HIV">HIV</option>
+                                        <option value="Hepatitis B">Hepatitis B</option>
+                                        <option value="Hepatitis C">Hepatitis C</option>
+                                        <option value="Syphilis">Syphilis</option>
+                                        <option value="Malaria">Malaria</option>
+                                        <option value="None">No, I didn't have any infection recently</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary w-100" onclick="nextQuestion('infection')">Next</button>
+                            </div>
+                        </div>
+
+                        <div id="illness-question-container" class="card" style="display: none;">
+                            <div class="card-body">
+                                <h5 class="card-title">Recent Illness</h5>
+                                <div class="mb-3">
+                                    <label for="illness-select" class="form-label">Did you have any recent illness in past 7 days?</label>
+                                    <select class="form-select" id="illness-select">
+                                        <option value="">Select illness</option>
+                                        <option value="Cold">Cold</option>
+                                        <option value="Flu">Flu</option>
+                                        <option value="Fever">Fever</option>
+                                        <option value="None">No, I didn't have any illness in past 7 days</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary w-100" onclick="nextQuestion('illness')">Next</button>
+                            </div>
+                        </div>
+
+                        <div id="chronic-disease-question-container" class="card" style="display: none;">
+                            <div class="card-body">
+                                <h5 class="card-title">Chronic Diseases</h5>
+                                <div class="mb-3">
+                                    <label for="chronic-disease-select" class="form-label">Do you have any chronic diseases?</label>
+                                    <select class="form-select" id="chronic-disease-select">
+                                        <option value="">Select disease</option>
+                                        <option value="Diabetes">Diabetes</option>
+                                        <option value="Heart Disease">Heart Disease</option>
+                                        <option value="Cancer">Cancer</option>
+                                        <option value="None">No, I don't have any diseases</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary w-100" onclick="nextQuestion('chronic-disease')">Next</button>
+                            </div>
+                        </div>
+
+                        <div id="skin-infection-question-container" class="card" style="display: none;">
+                            <div class="card-body">
+                                <h5 class="card-title">Skin Infection</h5>
+                                <div class="mb-3">
+                                    <label for="skin-infection-select" class="form-label">Do you have any skin infection over the vein (needle site)?</label>
+                                    <select class="form-select" id="skin-infection-select">
+                                        <option value="">Select your option</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary w-100" onclick="nextQuestion('skin-infection')">Next</button>
+                            </div>
+                        </div>
+
+                        <div id="tattoo-piercing-question-container" class="card" style="display: none;">
+                            <div class="card-body">
+                                <h5 class="card-title">Tattoo or Piercing</h5>
+                                <div class="mb-3">
+                                    <label for="tattoo-piercing-select" class="form-label">Have you done any tattoo or piercing?</label>
+                                    <select class="form-select" id="tattoo-piercing-select">
+                                        <option value="">Select your option</option>
+                                        <option value="Yes, Few Days Before">Yes, Few Days Before</option>
+                                        <option value="Yes, one to two Months Ago">Yes, one to two Months Ago</option>
+                                        <option value="Yes, three to six Months Ago">Yes, three to six Months Ago</option>
+                                        <option value="Yes, Before six months ago">Yes, Before six months ago</option>
+                                        <option value="No">No, I didn't do any Tattoo or Piercing</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary w-100" onclick="nextQuestion('tattoo-piercing')">Next</button>
+                            </div>
+                        </div>
+
+                        <div id="pregnancy-question-container" class="card" style="display: none;">
+                            <div class="card-body">
+                                <h5 class="card-title">Pregnancy Status</h5>
+                                <div class="mb-3">
+                                    <label for="pregnancy-select" class="form-label">Are you pregnant or Breastfeeding?</label>
+                                    <select class="form-select" id="pregnancy-select">
+                                        <option value="">Select the option</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary w-100" onclick="nextQuestion('pregnancy')">Next</button>
+                            </div>
+                        </div>
+
+                        <div id="blood-donation-question-container" class="card" style="display: none;">
+                            <div class="card-body">
+                                <h5 class="card-title">Blood Donation History</h5>
+                                <div class="mb-3">
+                                    <label for="blood-donation-select" class="form-label">Have you done any blood donation before?</label>
+                                    <select class="form-select" id="blood-donation-select" onchange="showDonationDaysInput()">
+                                        <option value="">Select donation type</option>
+                                        <option value="Whole Blood Donation">Whole Blood Donation</option>
+                                        <option value="Platelet Donation">Platelet Donation</option>
+                                        <option value="Plasma Donation">Plasma Donation</option>
+                                        <option value="Double Red Cell Donation">Double Red Cell Donation</option>
+                                        <option value="No">No, I didn't donate before</option>
+                                    </select>
+                                </div>
+                                <div id="donation-recovery-container" class="mb-3" style="display:none;">
+                                    <label id="donation-recovery-text" class="form-label"></label>
+                                    <input type="number" class="form-control" id="donation-recovery-days">
+                                </div>
+                                <button class="btn btn-primary w-100" onclick="nextQuestion('blood-donation')">Next</button>
+                            </div>
+                        </div>
+
+                        <div id="check-eligibility-container" class="card" style="display: none;">
+                            <div class="card-body">
+                                <h5 class="card-title">Check Your Eligibility</h5>
+                                <p class="card-text">Click the button below to check if you're eligible to donate blood.</p>
+                                <button class="btn btn-primary w-100" onclick="checkEligibility()">Check Eligibility</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal for eligibility result -->
+                <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="resultModalLabel">Eligibility Result</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p id="popup-message" class="mb-0"></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-primary" onclick="startOver()">Start Over</button>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blood Type Cards Section -->
+            <div class="tab-pane fade blood-type-section" id="blood-type-section" role="tabpanel" aria-labelledby="blood-type-tab">
+                <div class="row justify-content-center mt-4">
+                    <div class="col-12">
+                        <h2 class="text-center mb-4">Blood Type Compatibility</h2>
+                        <div class="blood-type-container">
+                            <div class="blood-type-button">
+                                <button type="button" class="tab-button w-100 selected" onclick="showCards(1)">A+</button>
+                            </div>
+                            <div class="blood-type-button">
+                                <button type="button" class="tab-button w-100" onclick="showCards(2)">O+</button>
+                            </div>
+                            <div class="blood-type-button">
+                                <button type="button" class="tab-button w-100" onclick="showCards(3)">B+</button>
+                            </div>
+                            <div class="blood-type-button">
+                                <button type="button" class="tab-button w-100" onclick="showCards(4)">AB+</button>
+                            </div>
+                            <div class="blood-type-button">
+                                <button type="button" class="tab-button w-100" onclick="showCards(5)">A-</button>
+                            </div>
+                            <div class="blood-type-button">
+                                <button type="button" class="tab-button w-100" onclick="showCards(6)">O-</button>
+                            </div>
+                            <div class="blood-type-button">
+                                <button type="button" class="tab-button w-100" onclick="showCards(7)">B-</button>
+                            </div>
+                            <div class="blood-type-button">
+                                <button type="button" class="tab-button w-100" onclick="showCards(8)">AB-</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row content-row mt-4">
+                    <!-- Left Column - Cards -->
+                    <div class="col-md-6 cards-column">
+                        <div class="card donor-card take-from">
+                            <div class="card-body">
+                                <h5 class="card-title">You can take from</h5>
+                                <p class="card-text" id="take-from-text">O+ O- A+ A-</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card donor-card give-to mt-3">
+                            <div class="card-body">
+                                <h5 class="card-title">You can give to</h5>
+                                <p class="card-text" id="give-to-text">A+ AB+</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column - Image -->
+                    <div class="col-md-6">
+                        <div class="patient-image">
+                            <!-- Placeholder image; replace with actual path if available -->
+                            <img src="/images/LADcardImage.jpg" alt="Blood donation" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Eligibility Form JavaScript
+        let age = null;
+        let weight = null;
+        let gender = null;
+        let infection = null;
+        let illness = null;
+        let chronicDisease = null;
+        let skinInfection = null;
+        let tattooPiercing = null;
+        let donationType = null;
+        let donationRecoveryDays = null;
+        let pregnancyStatus = null;
+        let resultModal;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+            showCards(1); // Initialize blood type cards
+        });
+
+        function nextQuestion(questionType) {
+            if (questionType === 'age') {
+                age = document.getElementById('age-input').value;
+                if (!age) {
+                    alert("Please enter your age.");
+                    return;
+                }
+                hideElement('age-question-container');
+                showElement('weight-question-container');
+            } else if (questionType === 'weight') {
+                weight = document.getElementById('weight-input').value;
+                if (!weight) {
+                    alert("Please enter your weight.");
+                    return;
+                }
+                hideElement('weight-question-container');
+                showElement('gender-question-container');
+            } else if (questionType === 'gender') {
+                const selectedGender = document.querySelector('input[name="gender"]:checked');
+                if (!selectedGender) {
+                    alert("Please select your gender.");
+                    return;
+                }
+                gender = selectedGender.value;
+                hideElement('gender-question-container');
+                showElement('infection-question-container');
+            } else if (questionType === 'infection') {
+                infection = document.getElementById('infection-select').value;
+                if (!infection) {
+                    alert("Please select your infection status.");
+                    return;
+                }
+                hideElement('infection-question-container');
+                showElement('illness-question-container');
+            } else if (questionType === 'illness') {
+                illness = document.getElementById('illness-select').value;
+                if (!illness) {
+                    alert("Please select your illness status.");
+                    return;
+                }
+                hideElement('illness-question-container');
+                showElement('chronic-disease-question-container');
+            } else if (questionType === 'chronic-disease') {
+                chronicDisease = document.getElementById('chronic-disease-select').value;
+                if (!chronicDisease) {
+                    alert("Please select your chronic disease status.");
+                    return;
+                }
+                hideElement('chronic-disease-question-container');
+                showElement('skin-infection-question-container');
+            } else if (questionType === 'skin-infection') {
+                skinInfection = document.getElementById('skin-infection-select').value;
+                if (!skinInfection) {
+                    alert("Please select your skin infection status.");
+                    return;
+                }
+                hideElement('skin-infection-question-container');
+                showElement('tattoo-piercing-question-container');
+            } else if (questionType === 'tattoo-piercing') {
+                tattooPiercing = document.getElementById('tattoo-piercing-select').value;
+                if (!tattooPiercing) {
+                    alert("Please select your tattoo/piercing status.");
+                    return;
+                }
+                hideElement('tattoo-piercing-question-container');
+                if (gender === 'Female') {
+                    showElement('pregnancy-question-container');
+                } else {
+                    showElement('blood-donation-question-container');
+                }
+            } else if (questionType === 'pregnancy') {
+                pregnancyStatus = document.getElementById('pregnancy-select').value;
+                if (!pregnancyStatus) {
+                    alert("Please select your pregnancy/breastfeeding status.");
+                    return;
+                }
+                hideElement('pregnancy-question-container');
+                showElement('blood-donation-question-container');
+            } else if (questionType === 'blood-donation') {
+                donationType = document.getElementById('blood-donation-select').value;
+                if (!donationType) {
+                    alert("Please select your blood donation history.");
+                    return;
+                }
+                if (donationType === "No") {
+                    document.getElementById('donation-recovery-container').style.display = 'none';
+                } else {
+                    donationRecoveryDays = document.getElementById('donation-recovery-days').value;
+                    if (!donationRecoveryDays) {
+                        alert("Please enter days since your last donation.");
+                        return;
+                    }
+                }
+                hideElement('blood-donation-question-container');
+                showElement('check-eligibility-container');
+            }
+        }
+
+        function checkEligibility() {
+            let notEligibleReasons = [];
+            if (age < 18 || age > 60) notEligibleReasons.push("Your age is not in the eligible range.");
+            if (weight < 50) notEligibleReasons.push("Your weight is below the required minimum.");
+            if (infection !== 'None') notEligibleReasons.push("You have an infection status that makes you ineligible.");
+            if (illness !== 'None') notEligibleReasons.push("You have had an illness within the last 7 days.");
+            if (chronicDisease !== 'None') notEligibleReasons.push("You have a chronic disease.");
+            if (skinInfection === 'Yes') notEligibleReasons.push("You have a skin infection over the vein.");
+            if (tattooPiercing === 'Yes, Few Days Before' || tattooPiercing === 'Yes, one to two Months Ago') {
+                notEligibleReasons.push("You cannot donate due to a recent tattoo or piercing.");
+            }
+            if (gender === 'Female' && pregnancyStatus === 'Yes') {
+                notEligibleReasons.push("Pregnant or breastfeeding women are not eligible to donate blood.");
+            }
+            if (donationType !== 'No' && donationType !== '') {
+                donationRecoveryDays = document.getElementById('donation-recovery-days').value;
+                if (!donationRecoveryDays || isNaN(donationRecoveryDays) || Number(donationRecoveryDays) < 0) {
+                    notEligibleReasons.push("Please enter a valid number of days since your last donation.");
+                } else {
+                    const recoveryDays = Number(donationRecoveryDays);
+                    switch(donationType) {
+                        case 'Whole Blood Donation':
+                            if (recoveryDays < 56) notEligibleReasons.push("You haven't completed the recovery time for whole blood donation (at least 56 days).");
+                            break;
+                        case 'Platelet Donation':
+                            if (recoveryDays < 7) notEligibleReasons.push("You haven't completed the recovery time for platelet donation (at least 7 days).");
+                            break;
+                        case 'Plasma Donation':
+                            if (recoveryDays < 28) notEligibleReasons.push("You haven't completed the recovery time for plasma donation (at least 28 days).");
+                            break;
+                        case 'Double Red Cell Donation':
+                            if (recoveryDays < 112) notEligibleReasons.push("You haven't completed the recovery time for double red cell donation (at least 112 days).");
+                            break;
+                    }
+                }
+            }
+            document.getElementById('popup-message').innerHTML = notEligibleReasons.length > 0
+                ? "<strong>You are not eligible to donate for the following reasons:</strong><br>" + notEligibleReasons.map(reason => "• " + reason).join("<br>")
+                : "<strong class='text-success'>You are eligible to donate!</strong><br>Thank you for your willingness to donate blood.";
+            resultModal.show();
+        }
+
+        function showDonationDaysInput() {
+            const donationType = document.getElementById('blood-donation-select').value;
+            const donationRecoveryInput = document.getElementById('donation-recovery-container');
+            const donationRecoveryText = document.getElementById('donation-recovery-text');
+            if (donationType !== 'No' && donationType !== '') {
+                donationRecoveryText.innerText = `Before how many days have you done ${donationType.toLowerCase()}?`;
+                donationRecoveryInput.style.display = 'block';
+            } else {
+                donationRecoveryInput.style.display = 'none';
+            }
+        }
+
+        function startOver() {
+            age = weight = gender = infection = illness = chronicDisease = skinInfection = tattooPiercing = donationType = donationRecoveryDays = pregnancyStatus = null;
+            document.getElementById('age-input').value = '';
+            document.getElementById('weight-input').value = '';
+            document.querySelectorAll('input[name="gender"]').forEach(radio => radio.checked = false);
+            document.getElementById('infection-select').selectedIndex = 0;
+            document.getElementById('illness-select').selectedIndex = 0;
+            document.getElementById('chronic-disease-select').selectedIndex = 0;
+            document.getElementById('skin-infection-select').selectedIndex = 0;
+            document.getElementById('tattoo-piercing-select').selectedIndex = 0;
+            if (document.getElementById('pregnancy-select')) {
+                document.getElementById('pregnancy-select').selectedIndex = 0;
+            }
+            document.getElementById('blood-donation-select').selectedIndex = 0;
+            document.getElementById('donation-recovery-days').value = '';
+            document.getElementById('donation-recovery-container').style.display = 'none';
+            ['weight-question-container', 'gender-question-container', 'infection-question-container', 'illness-question-container',
+             'chronic-disease-question-container', 'skin-infection-question-container', 'tattoo-piercing-question-container',
+             'pregnancy-question-container', 'blood-donation-question-container', 'check-eligibility-container'].forEach(hideElement);
+            showElement('age-question-container');
+            resultModal.hide();
+        }
+
+        // Blood Type Cards JavaScript
+        const bloodTypeData = {
+            1: { takeFrom: "O+ O- A+ A-", giveTo: "A+ AB+" },
+            2: { takeFrom: "O+ O-", giveTo: "O+ A+ B+ AB+" },
+            3: { takeFrom: "O+ O- B+ B-", giveTo: "B+ AB+" },
+            4: { takeFrom: "O+ O- A+ A- B+ B- AB+ AB-", giveTo: "AB+" },
+            5: { takeFrom: "O- A-", giveTo: "A+ A- AB+ AB-" },
+            6: { takeFrom: "O-", giveTo: "O+ O- A+ A- B+ B- AB+ AB-" },
+            7: { takeFrom: "O- B-", giveTo: "B+ B- AB+ AB-" },
+            8: { takeFrom: "O- A- B- AB-", giveTo: "AB+ AB-" }
+        };
+
+        function showCards(buttonNumber) {
+            document.getElementById('take-from-text').textContent = bloodTypeData[buttonNumber].takeFrom;
+            document.getElementById('give-to-text').textContent = bloodTypeData[buttonNumber].giveTo;
+            const buttons = document.querySelectorAll('.blood-type-section .tab-button');
+            buttons.forEach(button => button.classList.remove('selected'));
+            buttons[buttonNumber - 1].classList.add('selected');
+        }
+
+        // Helper functions
+        function showElement(id) {
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function hideElement(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+    </script>
+</body>
+</html>

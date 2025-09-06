@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | LifebloX</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center text-center p-2">
+    <div class="container bg-white p-3 p-md-4 rounded shadow-sm mx-auto" style="max-width: 90%;">
+        <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
+            <h2 class="text-danger fw-bold">
+                <i class="fas fa-heartbeat me-2"></i>
+                LifebloX Admin Dashboard
+            </h2>
+            <div>
+                <button class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-user-circle me-1"></i>Admin
+                </button>
+                <a href="/admin/logout" class="btn btn-outline-danger btn-sm ms-2">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+        
+        <div class="row g-4 mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="card bg-primary text-white h-100 transition" style="cursor: pointer; transition: transform 0.3s ease;">
+                    <div class="card-body">
+                        <div class="fs-1 mb-2"><i class="fas fa-campground"></i></div>
+                        <h4>Total Camps</h4>
+                        <h2 class="mb-0"><%= stats.totalCamps %></h2>
+                        <small class="text-white-50">Across <%= stats.citiesWithCamps %> cities</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card bg-success text-white h-100" style="cursor: pointer; transition: transform 0.3s ease;">
+                    <div class="card-body">
+                        <div class="fs-1 mb-2"><i class="fas fa-users"></i></div>
+                        <h4>Registered Donors</h4>
+                        <h2 class="mb-0"><%= stats.registeredDonors %></h2>
+                        <small class="text-white-50"><%= stats.newDonorsThisMonth %> new this month</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card bg-warning text-dark h-100" style="cursor: pointer; transition: transform 0.3s ease;">
+                    <div class="card-body">
+                        <div class="fs-1 mb-2"><i class="fas fa-tint"></i></div>
+                        <h4>Blood Units Available</h4>
+                        <h2 class="mb-0"><%= stats.totalBloodUnits %></h2>
+                        <small>Including all three Components</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card bg-info text-white h-100" style="cursor: pointer; transition: transform 0.3s ease;">
+                    <div class="card-body">
+                        <div class="fs-1 mb-2"><i class="fas fa-hospital"></i></div>
+                        <h4>Blood Banks</h4>
+                        <h2 class="mb-0"><%= stats.bloodBanks %></h2>
+                        <small class="text-white-50">Active partners</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-3 pb-2 border-bottom">
+            <h3>Registered Users</h3>
+            <a href="/admin/users/export" class="btn btn-primary btn-sm">
+                <i class="fas fa-file-excel me-1"></i>Export Excel
+            </a>
+        </div>
+        
+        <div class="d-flex flex-column flex-md-row gap-2 mb-3" id="users-filter-section">
+            <input type="text" class="form-control search-input" placeholder="Search by name or contact" style="max-width: 250px;">
+            <select class="form-select blood-type-filter" style="width: auto;">
+                <option value="">All Blood Types</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+            </select>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-striped" id="users-table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Contact</th>
+                        <th>Blood Type</th>
+                        <th>Last Donation</th>
+                        <th>Total Donations</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% users.forEach(function(user) { %>
+                    <tr>
+                        <td><%= user.name %></td>
+                        <td><%= user.contact %></td>
+                        <td>
+                            <%= user.bloodType %>
+                        </td>
+                        <td><%= user.lastDonationDate ? formatDate(user.lastDonationDate) : 'Never' %></td>
+                        <td><%= user.totalDonations || 0 %></td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="/admin/user/delete/<%= user._id %>"  class="btn btn-outline-danger btn-sm" 
+                                   onclick="return confirm('Are you sure you want to delete this user?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                Showing <span class="fw-bold"><%= (currentPage.users - 1) * itemsPerPage + 1 %> - <%= Math.min(currentPage.users * itemsPerPage, totalItems.users) %></span> of <span class="fw-bold"><%= totalItems.users %></span>
+            </div>
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item <%= currentPage.users === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="/admin/dashboard?page=<%= currentPage.users - 1 %>">Previous</a>
+                    </li>
+                    <% for(let i = 1; i <= Math.ceil(totalItems.users / itemsPerPage); i++) { %>
+                    <li class="page-item <%= currentPage.users === i ? 'active' : '' %>">
+                        <a class="page-link" href="/admin/dashboard?page=<%= i %>"><%= i %></a>
+                    </li>
+                    <% } %>
+                    <li class="page-item <%= !hasMore.users ? 'disabled' : '' %>">
+                        <a class="page-link" href="/admin/dashboard?page=<%= currentPage.users + (hasMore.users ? 1 : 0) %>">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-3 pb-2 border-bottom">
+            <h3>Active Blood Camps</h3>
+            <a href="/admin/camps/export" class="btn btn-primary btn-sm">
+                <i class="fas fa-file-excel me-1"></i>Export Excel
+            </a>
+        </div>
+        
+        <div class="d-flex flex-column flex-md-row gap-2 mb-3" id="camps-filter-section">
+            <input type="text" class="form-control search-input" placeholder="Search by name or location" style="max-width: 250px;">
+            <select class="form-select city-filter" style="width: auto;">
+                <option value="">All Cities</option>
+                <% cities.forEach(function(city) { %>
+                <option value="<%= city %>"><%= city %></option>
+                <% }); %>
+            </select>
+            <select class="form-select status-filter" style="width: auto;">
+                <option value="">All Status</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="ongoing">Ongoing</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-striped" id="camps-table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% camps.forEach(function(camp) { %>
+                    <tr>
+                        <td><%= camp.campName %></td>
+                        <td><%= camp.city %></td>
+                        <td><%= formatDate(camp.date) %></td>
+                        <td><%= camp.startTime %> - <%= camp.endTime %></td>
+                        <td>
+                            <% if (isCampUpcoming(camp.date)) { %>
+                                <span class="badge bg-primary">Upcoming</span>
+                            <% } else if (isCampOngoing(camp.date, camp.startTime, camp.endTime)) { %>
+                                <span class="badge bg-success">Ongoing</span>
+                            <% } else { %>
+                                <span class="badge bg-secondary">Completed</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="/admin/camp/delete/<%= camp._id %>" class="btn btn-outline-danger btn-sm"
+                                   onclick="return confirm('Are you sure you want to delete this camp?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                Showing <span class="fw-bold"><%= (currentPage.camps - 1) * itemsPerPage + 1 %> - <%= Math.min(currentPage.camps * itemsPerPage, totalItems.camps) %></span> of <span class="fw-bold"><%= totalItems.camps %></span>
+            </div>
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item <%= currentPage.camps === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="/admin/dashboard?campPage=<%= currentPage.camps - 1 %>">Previous</a>
+                    </li>
+                    <% for(let i = 1; i <= Math.ceil(totalItems.camps / itemsPerPage); i++) { %>
+                    <li class="page-item <%= currentPage.camps === i ? 'active' : '' %>">
+                        <a class="page-link" href="/admin/dashboard?campPage=<%= i %>"><%= i %></a>
+                    </li>
+                    <% } %>
+                    <li class="page-item <%= !hasMore.camps ? 'disabled' : '' %>">
+                        <a class="page-link" href="/admin/dashboard?campPage=<%= currentPage.camps + (hasMore.camps ? 1 : 0) %>">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-3 pb-2 border-bottom">
+            <h3>Active Blood Banks</h3>
+            <a href="/admin/banks/export" class="btn btn-primary btn-sm">
+                <i class="fas fa-file-excel me-1"></i>Export Excel
+            </a>
+        </div>
+        
+        <div class="d-flex flex-column flex-md-row gap-2 mb-3" id="banks-filter-section">
+            <input type="text" class="form-control search-input" placeholder="Search by name or location" style="max-width: 250px;">
+            <select class="form-select city-filter" style="width: auto;">
+                <option value="">All Cities</option>
+                <% cities.forEach(function(city) { %>
+                <option value="<%= city %>"><%= city %></option>
+                <% }); %>
+            </select>
+            <select class="form-select category-filter" style="width: auto;">
+                <option value="">All Categories</option>
+                <option value="Government">Government</option>
+                <option value="Private">Private</option>
+                <option value="NGO">NGO</option>
+            </select>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-striped" id="banks-table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Category</th>
+                        <th>Contact Person</th>
+                        <th>Available Units</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% banks.forEach(function(bank) { %>
+                    <tr>
+                        <td><%= bank.bloodBankName %></td>
+                        <td><%= bank.address %>, <%= bank.city %></td>
+                        <td><%= bank.category %></td>
+                        <td><%= bank.contactPerson %></td>
+                        <td>
+                            <% if (bank.availableUnits) { %>
+                                <%= bank.availableUnits %> units
+                            <% } else { %>
+                                <span class="text-muted">Not reported</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="/admin/bank/delete/<%= bank._id %>" class="btn btn-outline-danger btn-sm"
+                                   onclick="return confirm('Are you sure you want to delete this blood bank?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                Showing <span class="fw-bold"><%= (currentPage.banks - 1) * itemsPerPage + 1 %> - <%= Math.min(currentPage.banks * itemsPerPage, totalItems.banks) %></span> of <span class="fw-bold"><%= totalItems.banks %></span>
+            </div>
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item <%= currentPage.banks === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="/admin/dashboard?bankPage=<%= currentPage.banks - 1 %>">Previous</a>
+                    </li>
+                    <% for(let i = 1; i <= Math.ceil(totalItems.banks / itemsPerPage); i++) { %>
+                    <li class="page-item <%= currentPage.banks === i ? 'active' : '' %>">
+                        <a class="page-link" href="/admin/dashboard?bankPage=<%= i %>"><%= i %></a>
+                    </li>
+                    <% } %>
+                    <li class="page-item <%= !hasMore.banks ? 'disabled' : '' %>">
+                        <a class="page-link" href="/admin/dashboard?bankPage=<%= currentPage.banks + (hasMore.banks ? 1 : 0) %>">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Helper function to format dates
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+        
+        // Get blood type color
+        function getBloodTypeColor(bloodType) {
+            const colors = {
+                'A+': '#e74c3c',
+                'A-': '#c0392b',
+                'B+': '#3498db',
+                'B-': '#2980b9',
+                'AB+': '#9b59b6',
+                'AB-': '#8e44ad',
+                'O+': '#2ecc71',
+                'O-': '#27ae60'
+            };
+            return colors[bloodType] || '#95a5a6';
+        }
+        
+        // Check if camp is upcoming
+        function isCampUpcoming(date) {
+            return new Date(date) > new Date();
+        }
+        
+        // Check if camp is ongoing
+        function isCampOngoing(date, startTime, endTime) {
+            const today = new Date();
+            const campDate = new Date(date);
+            
+            if (today.toDateString() !== campDate.toDateString()) return false;
+            
+            const now = today.getHours() * 60 + today.getMinutes();
+            const start = parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1]);
+            const end = parseInt(endTime.split(':')[0]) * 60 + parseInt(endTime.split(':')[1]);
+            
+            return now >= start && now <= end;
+        }
+        
+        // Add hover effect to stat cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Universal filter function
+        function applyFilters(tableId, searchValue = "", filterValues = {}) {
+            const table = document.getElementById(tableId);
+            table.querySelectorAll('tbody tr').forEach(row => {
+                let showRow = true;
+                const rowText = row.textContent.toLowerCase();
+                
+                // Apply text search
+                if (searchValue && !rowText.includes(searchValue.toLowerCase())) {
+                    showRow = false;
+                }
+                
+                // Apply column-specific filters
+                for (const [filterClass, filterValue] of Object.entries(filterValues)) {
+                    if (!filterValue) continue; // Skip empty filters
+                    
+                    if (filterClass === 'blood-type-filter') {
+                        const bloodTypeCell = row.querySelector('td:nth-child(3)');
+                        if (bloodTypeCell && bloodTypeCell.textContent.trim() !== filterValue) {
+                            showRow = false;
+                        }
+                    } else if (filterClass === 'city-filter') {
+                        const cityCell = row.querySelector('td:nth-child(2)');
+                        if (cityCell && !cityCell.textContent.includes(filterValue)) {
+                            showRow = false;
+                        }
+                    } else if (filterClass === 'status-filter') {
+                        const statusCell = row.querySelector('td:nth-child(5) .badge');
+                        if (statusCell) {
+                            const status = statusCell.textContent.trim().toLowerCase();
+                            if (status !== filterValue.toLowerCase()) {
+                                showRow = false;
+                            }
+                        }
+                    } else if (filterClass === 'category-filter') {
+                        const categoryCell = row.querySelector('td:nth-child(3)');
+                        if (categoryCell && categoryCell.textContent.trim() !== filterValue) {
+                            showRow = false;
+                        }
+                    }
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            });
+        }
+        
+        // Initialize filter sections
+        function initializeFilters(sectionId, tableId) {
+            const section = document.getElementById(sectionId);
+            const searchInput = section.querySelector('.search-input');
+            const dropdowns = section.querySelectorAll('select');
+            
+            // Create an object to store filter values
+            const filterValues = {};
+            
+            // Initialize search input filter
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function() {
+                    applyFilters(tableId, this.value, filterValues);
+                });
+            }
+            
+            // Initialize dropdown filters
+            dropdowns.forEach(dropdown => {
+                dropdown.addEventListener('change', function() {
+                    // Store the selected value in filterValues
+                    for (const className of this.classList) {
+                        if (className.endsWith('-filter')) {
+                            filterValues[className] = this.value;
+                            break;
+                        }
+                    }
+                    
+                    // Apply all filters including the search text
+                    applyFilters(tableId, searchInput ? searchInput.value : "", filterValues);
+                });
+            });
+        }
+        
+        // Initialize all filter sections when DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFilters('users-filter-section', 'users-table');
+            initializeFilters('camps-filter-section', 'camps-table');
+            initializeFilters('banks-filter-section', 'banks-table');
+        });
+    </script>
+</body>
+</html>

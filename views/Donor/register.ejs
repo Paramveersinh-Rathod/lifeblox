@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body class="gradient-background dRegisterBody">
+<div class="container p-4 rounded shadow-lg bg-white dContainer">
+        <!-- Home Link -->
+        <div class="d-flex justify-content-start mb-2">
+            <a href="/" class="text-danger fw-bold text-decoration-none"> &larr; Back to Home</a>
+        </div>
+    <h2 class="text-center text-danger fw-bold mb-4">Register as Donor</h2>
+
+    <form id="registerForm" action="/donorRegister" method="POST" novalidate>
+        <!-- Name -->
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name" required maxlength="26">
+            <div class="invalid-feedback">Name must contain only letters and be at most 26 characters long.</div>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="emailId" name="emailId" placeholder="Enter your email" required>
+            <div class="invalid-feedback">Please enter a valid email address.</div>
+        </div>
+
+        <!-- Gender -->
+        <div class="mb-3">
+            <label class="form-label">Gender</label>
+            <div class="d-flex">
+                <div class="form-check me-4">
+                    <input class="form-check-input" type="radio" name="gender" id="genderMale" value="Male" required>
+                    <label class="form-check-label" for="genderMale">
+                        Male
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="Female" required>
+                    <label class="form-check-label" for="genderFemale">
+                        Female
+                    </label>
+                </div>
+            </div>
+            <div class="invalid-feedback" id="genderFeedback">Please select your gender.</div>
+        </div>
+
+        <!-- Mobile Number with Country Code -->
+        <div class="mb-3">
+            <label for="mobile" class="form-label">Mobile Number</label>
+            <div class="input-group">
+                <select class="form-select w-auto" id="countryCode" name="countryCode" style="max-width: 35%;">
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+91" selected>🇮🇳 +91</option>
+                    <option value="+44">🇬🇧 +44</option>
+                    <option value="+61">🇦🇺 +61</option>
+                    <option value="+49">🇩🇪 +49</option>
+                    <option value="+33">🇫🇷 +33</option>
+                    <option value="+81">🇯🇵 +81</option>
+                    <option value="+86">🇨🇳 +86</option>
+                </select>
+                <input type="tel" class="form-control" id="mobileNumber" name="mobileNumber" placeholder="Enter your mobile number" required maxlength="10"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)">
+            </div>
+            <div class="invalid-feedback">Please enter a valid 10-digit mobile number.</div>
+        </div>
+
+        <!-- Date of Birth -->
+        <div class="mb-3">
+            <label for="dob" class="form-label">Date of Birth</label>
+            <input type="date" class="form-control" id="dob" name="dob" required>
+            <div class="invalid-feedback">You must be at least 18 years old.</div>
+        </div>
+
+        <!-- Blood Type -->
+        <div class="mb-3">
+            <label for="bloodType" class="form-label">Blood Type</label>
+            <select class="form-select" id="bloodType" name="bloodType" required>
+                <option selected disabled value="">Select your blood type</option>
+                <option>A+</option>
+                <option>A-</option>
+                <option>B+</option>
+                <option>B-</option>
+                <option>O+</option>
+                <option>O-</option>
+                <option>AB+</option>
+                <option>AB-</option>
+            </select>
+            <div class="invalid-feedback">Please select your blood type.</div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required minlength="6" maxlength="13">
+            <div class="invalid-feedback">Password must be between 6 to 13 characters.</div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+            <div class="invalid-feedback">Passwords do not match.</div>
+        </div>
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger mb-3" role="alert">
+                <%= error %>
+            </div>
+        <% } %>
+        <div class="d-grid">
+            <button type="submit" class="btn btn-danger fw-bold">Register</button>
+        </div>
+
+        <div class="text-center mt-3">
+            <p class="mb-0">Already have an account? <a href="/donorLogin" class="text-danger fw-bold text-decoration-none">Login here</a></p>
+        </div>
+    </form>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent default form submission
+    let isValid = true;
+
+    // Name Validation - Allow letters, spaces and some special characters for names
+    const nameInput = document.getElementById("name");
+    const nameRegex = /^[A-Za-z\s'-]{1,26}$/;
+    if (!nameRegex.test(nameInput.value.trim())) {
+        nameInput.classList.add("is-invalid");
+        isValid = false;
+    } else {
+        nameInput.classList.remove("is-invalid");
+    }
+
+    // Email Validation - More comprehensive regex
+    const emailInput = document.getElementById("emailId");
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(emailInput.value)) {
+        emailInput.classList.add("is-invalid");
+        isValid = false;
+    } else {
+        emailInput.classList.remove("is-invalid");
+    }
+
+    // Gender Validation
+    const genderMale = document.getElementById("genderMale");
+    const genderFemale = document.getElementById("genderFemale");
+    const genderFeedback = document.getElementById("genderFeedback");
+    
+    if (!genderMale.checked && !genderFemale.checked) {
+        genderMale.classList.add("is-invalid");
+        genderFemale.classList.add("is-invalid");
+        genderFeedback.style.display = "block";
+        isValid = false;
+    } else {
+        genderMale.classList.remove("is-invalid");
+        genderFemale.classList.remove("is-invalid");
+        genderFeedback.style.display = "none";
+    }
+
+    // Mobile Number Validation (10 Digits)
+    const mobileInput = document.getElementById("mobileNumber");
+    const mobileRegex = /^\d{10}$/;
+    if (!mobileRegex.test(mobileInput.value)) {
+        mobileInput.classList.add("is-invalid");
+        isValid = false;
+    } else {
+        mobileInput.classList.remove("is-invalid");
+    }
+
+    // Blood Type Validation
+    const bloodTypeSelect = document.getElementById("bloodType");
+    if (bloodTypeSelect.selectedIndex === 0) {
+        bloodTypeSelect.classList.add("is-invalid");
+        isValid = false;
+    } else {
+        bloodTypeSelect.classList.remove("is-invalid");
+    }
+
+    // Date of Birth Validation (Must be at least 18 years old)
+    const dobInput = document.getElementById("dob");
+    const dob = new Date(dobInput.value);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) {
+        age--;
+    }
+    if (age < 18 || isNaN(age)) {
+        dobInput.classList.add("is-invalid");
+        isValid = false;
+    } else {
+        dobInput.classList.remove("is-invalid");
+    }
+
+    // Password Validation - Updated to max 13 characters
+    const passwordInput = document.getElementById("password");
+    const passwordValue = passwordInput.value;
+    if (passwordValue.length < 6 || passwordValue.length > 13) {
+        passwordInput.classList.add("is-invalid");
+        passwordInput.nextElementSibling.textContent = "Password must be between 6 to 13 characters.";
+        isValid = false;
+    } else {
+        passwordInput.classList.remove("is-invalid");
+    }
+
+    // Confirm Password Validation
+    const confirmPasswordInput = document.getElementById("confirmPassword");
+    if (confirmPasswordInput.value !== passwordValue) {
+        confirmPasswordInput.classList.add("is-invalid");
+        isValid = false;
+    } else {
+        confirmPasswordInput.classList.remove("is-invalid");
+    }
+
+    // If validation passes, submit the form
+    if (isValid) {
+        // Submit form programmatically
+        document.getElementById("registerForm").submit();
+    }
+});
+
+// Real-time password match validation
+document.getElementById("confirmPassword").addEventListener("input", function() {
+    const passwordInput = document.getElementById("password");
+    const confirmPasswordInput = document.getElementById("confirmPassword");
+    
+    if (confirmPasswordInput.value === "") {
+        confirmPasswordInput.classList.remove("is-invalid");
+        confirmPasswordInput.classList.remove("is-valid");
+    } else if (confirmPasswordInput.value !== passwordInput.value) {
+        confirmPasswordInput.classList.add("is-invalid");
+        confirmPasswordInput.classList.remove("is-valid");
+    } else {
+        confirmPasswordInput.classList.remove("is-invalid");
+        confirmPasswordInput.classList.add("is-valid");
+    }
+});
+
+// Add max date for DOB to prevent selecting future dates
+window.addEventListener("DOMContentLoaded", function() {
+    const dobInput = document.getElementById("dob");
+    const today = new Date();
+    const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    const maxDate = eighteenYearsAgo.toISOString().split('T')[0];
+    dobInput.setAttribute("max", maxDate);
+});
+</script>
+
+</body>
+</html>

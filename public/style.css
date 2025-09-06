@@ -1,0 +1,53 @@
+.nav-item.dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0;
+}
+
+.btn:hover{
+    background-color: white;
+    color: red;
+}
+
+
+.gradient-background {
+    background: linear-gradient(135deg, #FFDDC1     , #FFABAB     , #FF7676     );
+    background-size: 180% 180%;
+    animation: gradient-animation 4s ease infinite;
+  }
+  
+@keyframes gradient-animation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}  
+
+.hover-bg-danger:hover {
+    background-color: #B71C1C !important; /* Bootstrap 'danger' red */
+    color: white !important;
+}
+
+.dRegisterBody{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.dContainer{
+    max-width: 500px;
+    width: 100%;
+}
+
+@media (max-width: 576px) {
+    .dContainer {
+        padding: 15px;
+        box-shadow: none;
+    }
+}

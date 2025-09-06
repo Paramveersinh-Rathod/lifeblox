@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donor Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .btn-hover:hover {
+            background-color: var(--bs-success);
+            color: white;
+        }
+        .btn-hover-danger:hover {
+            background-color: var(--bs-danger);
+            color: white;
+        }
+        .btn-hover-primary:hover {
+            background-color: var(--bs-primary);
+            color: white;
+        }
+    </style>
+</head>
+<body class="gradient-background">
+    <div class="container p-4 bg-light rounded shadow-lg w-100" style="max-width: 800px;">
+        <h1 class="text-center text-danger fw-bold mb-4">Donor Dashboard</h1>
+
+        <!-- User Information Section -->
+        <div class="mb-4">
+            <h2 class="mb-2">User Information</h2>
+            <div class="card p-3">
+                <p><strong>Name:</strong> <%= donor.name %></p>
+                <p><strong>Email:</strong> <%= donor.emailId %></p>
+                <p><strong>Mobile Number:</strong> <%= donor.mobileNumber %></p>
+                <p><strong>Date of Birth:</strong> <%= donor.dob %></p>
+                <p><strong>Gender:</strong> <%= donor.gender || "Not specified" %></p>
+            </div>
+        </div>
+
+        <!-- Overview Section -->
+        <div class="row mb-4 g-3">
+            <div class="col-12 col-sm-6 col-md-4">
+                <div class="card p-3 text-center">
+                    <h5 class="text-danger">Total Donations</h5>
+                    <p class="fs-4"><%= donor.totalDonations || 0 %></p>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-4">
+                <div class="card p-3 text-center">
+                    <h5 class="text-primary">Next Eligible Date</h5>
+                    <p class="fs-4"><%= nextEligibleDate %></p>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card p-3 text-center">
+                    <h5 class="text-success">Blood Type</h5>
+                    <p class="fs-4"><%= donor.bloodType %></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid mb-4">
+            <% if (donor.donationHistory && donor.donationHistory.length > 0) { %>
+                <button class="btn btn-outline-success fw-semibold mt-2 btn-hover" id="exportCertificateBtn">Export Certificate</button>
+            <% } else { %>
+                <button class="btn btn-outline-secondary fw-semibold mt-2" disabled title="You need at least one donation to export a certificate">Export Certificate</button>
+            <% } %>
+        </div>
+
+        <!-- Donation History -->
+        <div class="mb-3">
+            <h2 class="mb-2">Donation History</h2>
+            <div class="card p-3">
+                <% if (donor.donationHistory && donor.donationHistory.length > 0) { %>
+                    <ul class="list-unstyled">
+                        <% donor.donationHistory.forEach(donation => { %>
+                            <li>
+                                <%= new Date(donation.date).toLocaleDateString('en-US', { 
+                                    month: 'long', 
+                                    day: 'numeric', 
+                                    year: 'numeric' 
+                                }) %> - <%= donation.location %>
+                            </li>
+                        <% }); %>
+                    </ul>
+                <% } else { %>
+                    <p class="text-muted">No donation history available.</p>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="d-grid">
+            <% if (isEligibleToday) { %>
+                <button class="btn btn-outline-danger fw-semibold mt-2 btn-hover-danger" id="registerForBloodCamp">Register for upcoming blood donation camp</button>
+            <% } else { %>
+                <button class="btn btn-outline-secondary fw-semibold mt-2" disabled title="You must wait until <%= nextEligibleDate %> to donate again">Register for upcoming blood donation camp</button>
+            <% } %>
+        </div>
+        
+        <div class="row mt-2">
+            <div class="col-12 col-md-6 d-grid">
+                <button class="btn btn-outline-primary fw-semibold btn-hover-primary" id="changePasswordBtn">Change Password</button>
+            </div>
+            <div class="col-12 col-md-6 d-grid mt-2 mt-md-0">
+                <a href="/donorLogout" class="btn btn-outline-primary fw-semibold btn-hover-primary">Log Out</a>
+            </div>
+        </div>
+        
+    </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Export Certificate Button
+        const exportCertificateBtn = document.getElementById('exportCertificateBtn');
+        const name = "<%= donor.name%>"
+        
+        if (exportCertificateBtn) {
+            exportCertificateBtn.addEventListener('click', function() {
+                // Show loading state
+                const originalText = exportCertificateBtn.textContent;
+                exportCertificateBtn.textContent = "Generating Certificate...";
+                exportCertificateBtn.disabled = true;
+                
+                // Generate and download the certificate
+                fetch("/generateCertificate")
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to generate certificate');
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        // Create a link to download the PDF
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = "Donation-Certificate "+name+".pdf" ;
+                        
+                        // Append to the document and trigger download
+                        document.body.appendChild(a);
+                        a.click();
+                        
+                        // Clean up
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        
+                        // Restore button state
+                        exportCertificateBtn.textContent = originalText;
+                        exportCertificateBtn.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to generate certificate. Please try again.');
+                        
+                        // Restore button state
+                        exportCertificateBtn.textContent = originalText;
+                        exportCertificateBtn.disabled = false;
+                    });
+            });
+        }
+        
+        document.getElementById("changePasswordBtn").addEventListener("click", function() {
+            window.location.href = "/donorForget";
+        });
+        
+        const registerBtn = document.getElementById("registerForBloodCamp");
+        if (registerBtn && !registerBtn.disabled) {
+            registerBtn.addEventListener("click", function() {
+                window.location.href = "/activeBloodCamp";
+            });
+        }
+    });
+    </script>
+</body>
+</html>

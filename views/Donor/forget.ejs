@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Forget Password</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="d-flex align-items-center justify-content-center vh-100 gradient-background">
+
+    <div class="container p-4 bg-light rounded shadow-lg w-100" style="max-width: 500px;">
+        <!-- Home Link -->
+        <div class="d-flex justify-content-start mb-2">
+            <a href="/" class="text-danger fw-bold text-decoration-none"> &larr; Back to Home</a>
+        </div>
+        <h2 class="text-center text-danger fw-bold mb-4">Forget Password</h2>
+
+        <!-- Alert for messages -->
+        <div id="alertMessage" class="alert d-none" role="alert"></div>
+
+        <form id="forgetPasswordForm" novalidate>
+            <!-- Step 1: Email Input -->
+            <div class="mb-3" id="emailSection">
+                <label for="email" class="form-label fw-semibold">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                <div class="invalid-feedback">Please enter a valid email address.</div>
+            </div>
+
+            <!-- Step 1: Send OTP Button -->
+            <div class="d-grid mb-3" id="sendOtpSection">
+                <button type="button" class="btn btn-danger fw-bold" id="sendOtpBtn">Send OTP</button>
+            </div>
+
+            <!-- Step 2: OTP Input (Hidden Initially) -->
+            <div class="mb-3 d-none" id="otpSection">
+                <label for="otp" class="form-label fw-semibold">OTP</label>
+                <input type="text" class="form-control" id="otp" placeholder="Enter OTP" required>
+                <div class="invalid-feedback">OTP must be exactly 5 digits.</div>
+                <small class="form-text text-muted">Enter the 5-digit OTP sent to your email.</small>
+            </div>
+
+            <!-- Step 2: Submit OTP Button (Hidden Initially) -->
+            <div class="d-grid mb-3 d-none" id="submitOtpSection">
+                <button type="button" class="btn btn-danger fw-bold" id="submitOtpBtn">Submit OTP</button>
+            </div>
+
+            <!-- Step 3: Password Input (Hidden Initially) -->
+            <div class="mb-3 d-none" id="passwordSection">
+                <label for="password" class="form-label fw-semibold">Create New Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Create your password" required>
+                <div class="invalid-feedback">Password must be between 6 to 13 characters.</div>
+            </div>
+
+            <!-- Step 3: Set Password Button (Hidden Initially) -->
+            <div class="d-grid d-none" id="setPasswordSection">
+                <button type="button" class="btn btn-danger fw-bold" id="setPasswordBtn">Reset Password</button>
+            </div>
+        </form>
+
+        <!-- Link back to login -->
+        <div class="text-center mt-3">
+            <a href="/donorLogin" class="text-danger fw-bold text-decoration-none">Back to Login</a>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const emailInput = document.getElementById("email");
+        const sendOtpBtn = document.getElementById("sendOtpBtn");
+        const otpInput = document.getElementById("otp");
+        const submitOtpBtn = document.getElementById("submitOtpBtn");
+        const passwordInput = document.getElementById("password");
+        const setPasswordBtn = document.getElementById("setPasswordBtn");
+        const alertMessage = document.getElementById("alertMessage");
+
+        const emailSection = document.getElementById("emailSection");
+        const sendOtpSection = document.getElementById("sendOtpSection");
+        const otpSection = document.getElementById("otpSection");
+        const submitOtpSection = document.getElementById("submitOtpSection");
+        const passwordSection = document.getElementById("passwordSection");
+        const setPasswordSection = document.getElementById("setPasswordSection");
+
+        // Function to show alert message
+        function showAlert(message, type) {
+            alertMessage.textContent = message;
+            alertMessage.className = `alert alert-${type}`;
+            alertMessage.classList.remove("d-none");
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                alertMessage.classList.add("d-none");
+            }, 5000);
+        }
+
+        // Step 1: Send OTP Click
+        sendOtpBtn.addEventListener("click", function () {
+            if (!emailInput.checkValidity()) {
+                emailInput.classList.add("is-invalid");
+                return;
+            }
+
+            // Show loading state
+            sendOtpBtn.textContent = "Sending...";
+            sendOtpBtn.setAttribute("disabled", "true");
+
+            // Send OTP request to server
+            fetch("/donorForget/sendDonorOTP", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ emailId: emailInput.value }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message, "success");
+                    
+                    // Enable OTP section
+                    emailInput.classList.add("is-valid");
+                    emailInput.setAttribute("disabled", "true");
+                    sendOtpBtn.textContent = "Send OTP";
+                    
+                    otpSection.classList.remove("d-none");
+                    submitOtpSection.classList.remove("d-none");
+                } else {
+                    showAlert(data.message, "danger");
+                    sendOtpBtn.textContent = "Send OTP";
+                    sendOtpBtn.removeAttribute("disabled");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                showAlert("Server error. Please try again.", "danger");
+                sendOtpBtn.textContent = "Send OTP";
+                sendOtpBtn.removeAttribute("disabled");
+            });
+        });
+
+        // Step 2: Submit OTP Click
+        submitOtpBtn.addEventListener("click", function () {
+            if (!/^\d{5}$/.test(otpInput.value)) {
+                otpInput.classList.add("is-invalid");
+                return;
+            }
+
+            // Show loading state
+            submitOtpBtn.textContent = "Verifying...";
+            submitOtpBtn.setAttribute("disabled", "true");
+
+            // Verify OTP
+            fetch("/donorForget/verifyDonorOTP", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ 
+                    emailId: emailInput.value,
+                    otp: otpInput.value 
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message, "success");
+                    
+                    // Enable password section
+                    otpInput.classList.add("is-valid");
+                    otpInput.setAttribute("disabled", "true");
+                    submitOtpBtn.textContent = "Submit OTP";
+                    
+                    passwordSection.classList.remove("d-none");
+                    setPasswordSection.classList.remove("d-none");
+                } else {
+                    showAlert(data.message, "danger");
+                    submitOtpBtn.textContent = "Submit OTP";
+                    submitOtpBtn.removeAttribute("disabled");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                showAlert("Server error. Please try again.", "danger");
+                submitOtpBtn.textContent = "Submit OTP";
+                submitOtpBtn.removeAttribute("disabled");
+            });
+        });
+
+        // Step 3: Set Password Click
+        setPasswordBtn.addEventListener("click", function () {
+            if (passwordInput.value.length < 6 || passwordInput.value.length > 13) {
+                passwordInput.classList.add("is-invalid");
+                return;
+            }
+
+            // Show loading state
+            setPasswordBtn.textContent = "Resetting...";
+            setPasswordBtn.setAttribute("disabled", "true");
+
+            // Reset password
+            fetch("/donorForget/resetDonorPassword", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ 
+                    emailId: emailInput.value,
+                    newPassword: passwordInput.value 
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message, "success");
+                    
+                    // Redirect to login page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = "/donorLogin";
+                    }, 2000);
+                } else {
+                    showAlert(data.message, "danger");
+                    setPasswordBtn.textContent = "Reset Password";
+                    setPasswordBtn.removeAttribute("disabled");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                showAlert("Server error. Please try again.", "danger");
+                setPasswordBtn.textContent = "Reset Password";
+                setPasswordBtn.removeAttribute("disabled");
+            });
+        });
+
+        // Clear invalid state when user types
+        emailInput.addEventListener("input", function() {
+            this.classList.remove("is-invalid");
+        });
+        
+        otpInput.addEventListener("input", function() {
+            this.classList.remove("is-invalid");
+        });
+        
+        passwordInput.addEventListener("input", function() {
+            this.classList.remove("is-invalid");
+        });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

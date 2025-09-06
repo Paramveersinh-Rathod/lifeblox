@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .btn-hover:hover {
+            background-color: var(--bs-success);
+            color: white;
+        }
+        .btn-hover-danger:hover {
+            background-color: var(--bs-danger);
+            color: white;
+        }
+        .btn-hover-primary:hover {
+            background-color: var(--bs-primary);
+            color: white;
+        }
+        #iframe-container {
+          width: 100%;
+          max-width: 250px; /* Set your desired max width */
+          height: 250px; /* Set your desired height */
+          overflow: hidden; /* Optional - prevents scrollbars on the container */
+          position: relative;
+        }
+
+        #iframe-container iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container p-4 bg-light rounded shadow-lg w-100" style="max-width: 900px;">
+        <h1 class="text-center text-danger fw-bold mb-4">Blood Bank Dashboard</h1>
+
+        <!-- Blood Bank Information -->
+        <div class="mb-4">
+            <h2 class="mb-2">Blood Bank Information</h2>
+            <div class="card p-3">
+                <p><strong>City:</strong> <%= bloodBank.city %></p>
+                <p><strong>Blood Bank Name:</strong> <%= bloodBank.bloodBankName %></p>
+                <p><strong>Hospital Name:</strong> <%= bloodBank.hospitalName %></p>
+                <p><strong>Category:</strong> <%= bloodBank.category %></p>
+                <p><strong>Contact Person:</strong> <%= bloodBank.contactPerson %></p>
+                <p><strong>Email:</strong> <%= bloodBank.email %></p>
+                <p><strong>Contact Number:</strong> <%= bloodBank.contactNo %></p>
+                <p><strong>License No:</strong> <%= bloodBank.licenseNo %></p>
+                <p><strong>Address:</strong> <%= bloodBank.address %>, <%= bloodBank.pincode %></p>
+            </div>
+        </div>
+
+        <!-- Camp Requests -->
+        <div class="mb-3">
+            <h2 class="mb-2">
+                <button class="btn btn-outline-secondary w-100 text-start" data-bs-toggle="collapse" data-bs-target="#campRequests">Camp Requests</button>
+            </h2>
+            <div id="campRequests" class="collapse">
+                <div class="card p-3">
+                    <% if (bloodCamps && bloodCamps.length > 0) { %>
+                        <% bloodCamps.forEach((camp) => { %>
+                            <div class="border-bottom pb-2 mb-2">
+                                <p><strong>Camp Name:</strong> <%= camp.campName %></p>
+                                <p><strong>Date:</strong> <%= new Date(camp.date).toLocaleDateString() %></p>
+                                <p><strong>Time:</strong> <%= camp.startTime %> to <%= camp.endTime %></p>
+                                <p><strong>Location:</strong><br> <div id="iframe-container"><%- camp.location %></div></p><br>
+                                <p><strong>City:</strong> <%= camp.city %></p>
+                                <p><strong>Contact Number:</strong> <%= camp.contactNumber %></p>
+                                <p><strong>Email:</strong> <%= camp.email %></p>
+                                <button class="btn btn-success btn-sm me-2" onclick="approveCamp('<%= camp._id %>')">Approve</button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectCamp('<%= camp._id %>')">Reject</button>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <p class="text-muted">No camp requests available.</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Registered camps -->
+        <div class="mb-3">
+            <h2 class="mb-2">
+                <button class="btn btn-outline-secondary w-100 text-start" data-bs-toggle="collapse" data-bs-target="#registeredCamps">Registered Camps</button>
+            </h2>
+            <div id="registeredCamps" class="collapse">
+                <div class="card p-3">
+                    <% if (approvedCamps && approvedCamps.length > 0) { %>
+                        <% approvedCamps.forEach((camp) => { %>
+                            <div class="mb-3">
+                                <button class="btn btn-outline-info w-100 text-start" data-bs-toggle="collapse" data-bs-target="#camp<%= camp._id %>">
+                                    <%= camp.campName %> - <%= new Date(camp.date).toLocaleDateString() %>
+                                </button>
+                                <div id="camp<%= camp._id %>" class="collapse mt-2">
+                                    <div class="card p-3">
+                                        <div class="mb-3">
+                                            <h5>Camp Details</h5>
+                                            <p><strong>Time:</strong> <%= camp.startTime %> to <%= camp.endTime %></p>
+                                            <p><strong>City:</strong> <%= camp.city %></p>
+                                            <p><strong>Contact:</strong> <%= camp.contactNumber %></p>
+                                            <p><strong>Email:</strong> <%= camp.email %></p>
+                                        </div>
+                                        
+                                        <div>
+                                            <h5>Registered Donors</h5>
+                                            <% if (camp.donors && camp.donors.length > 0) { %>
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Donor Name</th>
+                                                                <th>Blood Group</th>
+                                                                <th>Phone</th>
+                                                                <th>Email</th>
+                                                                <th>Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                             <% camp.donors.forEach(donor => { %>
+                                                                <% if (donor) { %>  
+                                                                    <tr>
+                                                                        <td><%= donor.donorName %></td>
+                                                                        <td><%= donor.donorBloodType %></td>
+                                                                        <td><%= donor.donorMobileNumber %></td>
+                                                                        <td><%= donor.donorEmail %></td>
+                                                                        <td>
+                                                                            <% if (donor.hasDonated) { %>
+                                                                                <button class="btn btn-success btn-sm" disabled>Donated</button>
+                                                                            <% } else { %>
+                                                                                <button class="btn btn-primary btn-sm" onclick="markDonated('<%= donor.donorEmail %>', '<%= camp._id %>')">Mark as Donated</button>
+                                                                            <% } %>
+                                                                        </td>
+                                                                    </tr>
+                                                                <% } %>
+                                                            <% }); %> 
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            <% } else { %>
+                                                <p class="text-muted">No donors registered for this camp yet.</p>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <p class="text-muted">No approved camps available.</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        
+            <div class="mb-3">
+                <h2 class="mb-2">
+                    <button class="btn btn-outline-secondary w-100 text-start" data-bs-toggle="collapse" data-bs-target="#bloodStockManagement">Blood Stock Management</button>
+                </h2>
+                <div id="bloodStockManagement" class="collapse">
+                    <div class="card p-3">
+                        <!-- Add New Stock Form -->
+                        <h4 class="mb-3">Add New Blood Stock</h4>
+                        <form id="addStockForm" class="mb-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="bloodComponent" class="form-label">Blood Component</label>
+                                    <select class="form-select" id="bloodComponent" required>
+                                        <option value="" selected disabled>Select Component</option>
+                                        <option value="Whole Blood">Whole Blood</option>
+                                        <option value="Single Plasma">Single Plasma</option>
+                                        <option value="Single Platelet">Single Platelet</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="bloodType" class="form-label">Blood Type</label>
+                                    <select class="form-select" id="bloodType" required>
+                                        <option value="" selected disabled>Select Blood Type</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="city" class="form-label">City</label>
+                                    <select class="form-select" id="city" required>
+                                        <option value="" selected disabled>Select City</option>
+                                        <option value="Ahmedabad">Ahmedabad</option>
+                                        <option value="Delhi">Delhi</option>
+                                        <option value="Mumbai">Mumbai</option>
+                                        <option value="Lucknow">Lucknow</option>
+                                        <option value="Bangalore">Bangalore</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="units" class="form-label">Units</label>
+                                    <input type="number" class="form-control" id="units" min="1" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="expiryDate" class="form-label">Expiry Date</label>
+                                    <input type="date" class="form-control" id="expiryDate" required>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-success">Add Stock</button>
+                                </div>
+                            </div>
+                        </form>
+            
+                        <!-- Current Stock Table -->
+                        <h4 class="mb-3">Current Blood Stock</h4>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered" id="bloodStockTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Blood Component</th>
+                                        <th>Blood Type</th>
+                                        <th>City</th>
+                                        <th>Units</th>
+                                        <th>Expiry Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (bloodBank.detailedBloodStock && bloodBank.detailedBloodStock.length > 0) { %>
+                                        <% bloodBank.detailedBloodStock.forEach((stock, index) => { %>
+                                            <tr data-stock-id="<%= stock._id %>">
+                                                <td><%= stock.bloodComponent %></td>
+                                                <td><%= stock.bloodType %></td>
+                                                <td><%= stock.city %></td>
+                                                <td>
+                                                    <span class="stock-units"><%= stock.units %></span>
+                                                    <input type="number" class="form-control edit-units d-none" min="1" value="<%= stock.units %>">
+                                                </td>
+                                                <td>
+                                                    <span class="stock-expiry"><%= new Date(stock.expiryDate).toLocaleDateString() %></span>
+                                                    <input type="date" class="form-control edit-expiry d-none" value="<%= new Date(stock.expiryDate).toISOString().split('T')[0] %>">
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group view-mode">
+                                                        <button class="btn btn-sm btn-primary edit-btn" onclick="enableEdit(this)">Edit</button>
+                                                        <button class="btn btn-sm btn-danger delete-btn" onclick="deleteStock('<%= stock._id %>')">Delete</button>
+                                                    </div>
+                                                    <div class="btn-group edit-mode d-none">
+                                                        <button class="btn btn-sm btn-success save-btn" onclick="saveEdit(this, '<%= stock._id %>')">Save</button>
+                                                        <button class="btn btn-sm btn-secondary cancel-btn" onclick="cancelEdit(this)">Cancel</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="text-center">No blood stock data available</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+            
+                        <!-- Filter Options -->
+                        <div class="card mt-4 p-3">
+                            <h5>Filter Blood Stock</h5>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <select class="form-select" id="filterComponent">
+                                        <option value="">All Components</option>
+                                        <option value="Whole Blood">Whole Blood</option>
+                                        <option value="Single Plasma">Single Plasma</option>
+                                        <option value="Single Platelet">Single Platelet</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select" id="filterBloodType">
+                                        <option value="">All Blood Types</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select" id="filterCity">
+                                        <option value="">All Cities</option>
+                                        <option value="Ahmedabad">Ahmedabad</option>
+                                        <option value="Delhi">Delhi</option>
+                                        <option value="Mumbai">Mumbai</option>
+                                        <option value="Lucknow">Lucknow</option>
+                                        <option value="Bangalore">Bangalore</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn btn-outline-primary" id="applyFilter">Apply Filter</button>
+                                <button class="btn btn-outline-secondary" id="resetFilter">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+        <div class="row mt-2">
+            <div class="col-12 col-md-6 d-grid">
+                <button class="btn btn-outline-primary fw-semibold btn-hover-primary" id="changePasswordBtn">Change Password</button>
+            </div>
+            <div class="col-12 col-md-6 d-grid mt-2 mt-md-0">
+                <a href="/bloodbankLogout" class="btn btn-outline-primary fw-semibold btn-hover-primary">Log Out</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Function to handle blood camp approval
+        function approveCamp(campId) {
+            fetch('/approveCamp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ campId: campId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Camp approved successfully');
+                    location.reload();
+                } else {
+                    alert('Failed to approve camp: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request');
+            });
+        }
+
+        // Function to handle blood camp rejection
+        function rejectCamp(campId) {
+            fetch('/rejectCamp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ campId: campId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Camp rejected successfully');
+                    location.reload();
+                } else {
+                    alert('Failed to reject camp: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request');
+            });
+        }
+
+function markDonated(donorEmail, campId) {
+    if (confirm("Are you sure you want to mark this donor as having donated?")) {
+        fetch('/markDonated', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ donorEmail: donorEmail, campId: campId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Find the button that was clicked
+                const button = document.querySelector(`button[onclick="markDonated('${donorEmail}', '${campId}')"]`);
+                if (button) {
+                    // Replace the button with a green "Marked" label
+                    button.innerHTML = 'Marked';
+                    button.classList.remove('btn-primary');
+                    button.classList.add('btn-success');
+                    button.disabled = true;
+                    // Remove the onclick handler
+                    button.removeAttribute('onclick');
+                }
+                
+                alert('Donor marked as donated successfully');
+            } else {
+                alert('Failed to mark donation: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing your request');
+        });
+    }
+}
+
+        document.getElementById("changePasswordBtn").addEventListener("click", function() {
+            window.location.href = "/bloodbankChangePassword";
+        });
+        document.getElementById('addStockForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const bloodComponent = document.getElementById('bloodComponent').value;
+        const bloodType = document.getElementById('bloodType').value;
+        const city = document.getElementById('city').value;
+        const units = document.getElementById('units').value;
+        const expiryDate = document.getElementById('expiryDate').value;
+        
+        fetch('/addBloodStock', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                bloodComponent,
+                bloodType,
+                city,
+                units,
+                expiryDate
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Blood stock added successfully');
+                location.reload();
+            } else {
+                alert('Failed to add blood stock: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing your request');
+        });
+    });
+
+    // Enable edit mode
+    function enableEdit(btn) {
+        const row = btn.closest('tr');
+        row.querySelector('.view-mode').classList.add('d-none');
+        row.querySelector('.edit-mode').classList.remove('d-none');
+        
+        row.querySelector('.stock-units').classList.add('d-none');
+        row.querySelector('.edit-units').classList.remove('d-none');
+        
+        row.querySelector('.stock-expiry').classList.add('d-none');
+        row.querySelector('.edit-expiry').classList.remove('d-none');
+    }
+
+    // Cancel edit mode
+    function cancelEdit(btn) {
+        const row = btn.closest('tr');
+        row.querySelector('.view-mode').classList.remove('d-none');
+        row.querySelector('.edit-mode').classList.add('d-none');
+        
+        row.querySelector('.stock-units').classList.remove('d-none');
+        row.querySelector('.edit-units').classList.add('d-none');
+        
+        row.querySelector('.stock-expiry').classList.remove('d-none');
+        row.querySelector('.edit-expiry').classList.add('d-none');
+    }
+
+    // Save edited stock
+    function saveEdit(btn, stockId) {
+        const row = btn.closest('tr');
+        const units = row.querySelector('.edit-units').value;
+        const expiryDate = row.querySelector('.edit-expiry').value;
+        
+        fetch('/updateBloodStock', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                stockId,
+                units,
+                expiryDate
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the displayed values
+                row.querySelector('.stock-units').textContent = units;
+                row.querySelector('.stock-expiry').textContent = new Date(expiryDate).toLocaleDateString();
+                
+                // Exit edit mode
+                cancelEdit(btn);
+                
+                alert('Blood stock updated successfully');
+            } else {
+                alert('Failed to update blood stock: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing your request');
+        });
+    }
+
+    // Delete stock
+    function deleteStock(stockId) {
+        if (confirm('Are you sure you want to delete this blood stock entry?')) {
+            fetch('/deleteBloodStock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ stockId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the row from the table
+                    document.querySelector(`tr[data-stock-id="${stockId}"]`).remove();
+                    alert('Blood stock deleted successfully');
+                    
+                    // If no rows left, add the "No blood stock data available" row
+                    const tbody = document.querySelector('#bloodStockTable tbody');
+                    if (tbody.children.length === 0) {
+                        const noDataRow = document.createElement('tr');
+                        noDataRow.innerHTML = '<td colspan="6" class="text-center">No blood stock data available</td>';
+                        tbody.appendChild(noDataRow);
+                    }
+                } else {
+                    alert('Failed to delete blood stock: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request');
+            });
+        }
+    }
+
+    // Filter functionality
+    document.getElementById('applyFilter').addEventListener('click', function() {
+        const componentFilter = document.getElementById('filterComponent').value;
+        const bloodTypeFilter = document.getElementById('filterBloodType').value;
+        const cityFilter = document.getElementById('filterCity').value;
+        
+        const rows = document.querySelectorAll('#bloodStockTable tbody tr:not(.no-data)');
+        
+        rows.forEach(row => {
+            const component = row.cells[0].textContent;
+            const bloodType = row.cells[1].textContent;
+            const city = row.cells[2].textContent;
+            
+            const componentMatch = !componentFilter || component === componentFilter;
+            const bloodTypeMatch = !bloodTypeFilter || bloodType === bloodTypeFilter;
+            const cityMatch = !cityFilter || city === cityFilter;
+            
+            if (componentMatch && bloodTypeMatch && cityMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    document.getElementById('resetFilter').addEventListener('click', function() {
+        document.getElementById('filterComponent').value = '';
+        document.getElementById('filterBloodType').value = '';
+        document.getElementById('filterCity').value = '';
+        
+        const rows = document.querySelectorAll('#bloodStockTable tbody tr');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+    });
+    </script>
+</body>
+</html>
