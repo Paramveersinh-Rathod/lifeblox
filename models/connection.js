@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
-
-const uri = "mongodb+srv://paramvir:paramvir@cluster0.yoyi4.mongodb.net/Collection0?retryWrites=true&w=majority&appName=Cluster0";
+import dotenv from 'dotenv';
+dotenv.config();
+const uri = process.env.MONGO_URI;
 
 // Create and export the connection
 const connectDB = async () => {

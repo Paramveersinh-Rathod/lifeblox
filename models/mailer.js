@@ -1,10 +1,12 @@
 import nodemailer from "nodemailer";
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Configure nodemailer
 export const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: "lifeblox.healthcare@gmail.com", // Replace with your Gmail
-        pass: "exaljwydmyfakikg" // Use app password for Gmail
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
